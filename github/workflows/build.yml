@@ -1,0 +1,33 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Project ZIP
+        run: unzip -q ClipForge-starter.zip -d project
+
+      - name: Find Gradle Wrapper
+        run: |
+          cd project
+          WRAPPER=$(find . -name gradlew -type f | head -n 1)
+          if [ -z "$WRAPPER" ]; then
+            echo "Gradle wrapper not found"
+            exit 1
+          fi
+          chmod +x "$WRAPPER"
+          cd "$(dirname "$WRAPPER")"
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GameRecorder-APK
+          path: project/**/*.apk
